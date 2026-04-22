@@ -49,12 +49,12 @@ const ClearBtn = styled.button`
   &:hover { color: ${({ theme }) => theme.colors.textSecondary}; }
 `;
 
-interface Props {
+interface SearchBarProps {
   value: string;
   onChange: (val: string) => void;
 }
 
-export default function SearchBar({ value, onChange }: Props) {
+export default function SearchBar({ value, onChange }: SearchBarProps) {
   return (
     <Wrap>
       <Icon viewBox="0 0 15 15" fill="none" strokeWidth="1.6">
