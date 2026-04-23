@@ -1,10 +1,16 @@
-import  { useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import SearchBar from '../components/SearchBar/SearchBar';
-// import SearchBar from '../../components/SearchBar/SearchBar';
-// import SortControls from '../../components/SortControls/SortControls';
-// import { SortOption } from '../../types/pet';
+import { usePets } from '../hooks/usePets';
+import ShimmerUI from '../components/ShimmerUI/ShimmerUI';
+import { filterPets, sortPets } from '../utils/filter';
+import { useSelection } from '../context/SelectionContext';
+import ErrorState from '../components/ErrorState/ErrorState';
+import type { SortOption } from '../types/pets';
+import SortControls from '../components/SortControls/SortContols';
+import { useDownload } from '../hooks/useDownload';
+
 
 /* ── layout ── */
 const Page = styled.div`
@@ -83,15 +89,22 @@ const Card = styled.article<{ $selected: boolean }>`
   }
 `;
 
-const CardThumb = styled.div<{ $bg: string }>`
-  height: 180px;
-  background: ${({ $bg }) => $bg};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 52px;
-  overflow: hidden;
-  position: relative;
+const CardThumb = styled.div`
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  background: ${({ theme }) => theme.colors.primaryLight};
+`;
+
+const CardImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 400ms ease;
+
+  ${Card}:hover & {
+    transform: scale(1.04);
+  }
 `;
 
 const Checkbox = styled.button<{ $checked: boolean }>`
@@ -148,6 +161,32 @@ const Pagination = styled.div`
   margin-top: 40px;
 `;
 
+const NavBtn = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 15px;
+  transition: all 150ms ease;
+  cursor:pointer;
+
+  &:hover:not(:disabled) {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+`;
+
 const PageBtn = styled.button<{ $active?: boolean }>`
   width: 36px;
   height: 36px;
@@ -157,6 +196,7 @@ const PageBtn = styled.button<{ $active?: boolean }>`
   color: ${({ theme, $active }) => $active ? '#fff' : theme.colors.textSecondary};
   font-size: 13px;
   transition: all 150ms ease;
+  cursor:pointer;
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme, $active }) => $active ? '#fff' : theme.colors.primary};
@@ -211,63 +251,74 @@ const DownloadBtn = styled.button`
   &:hover { opacity: 0.88; }
 `;
 
-/* ── static mock data ── */
-const PETS = [
-  { id:'1', emoji:'🐶', bg:'#FAECE7', name:'Buddy',  desc:'A friendly golden retriever who loves to play fetch at the park.',        date:'Apr 10, 2024' },
-  { id:'2', emoji:'🐱', bg:'#EEEDFE', name:'Luna',   desc:'Curious tabby cat who explores every corner of the house quietly.',        date:'Mar 22, 2024' },
-  { id:'3', emoji:'🐹', bg:'#FAEEDA', name:'Peanut', desc:'Tiny hamster with big energy — runs on his wheel all night long.',         date:'Feb 14, 2024' },
-  { id:'4', emoji:'🐦', bg:'#E1F5EE', name:'Rio',    desc:'Colourful parrot who can mimic over 30 different words and melodies.',     date:'Jan 5, 2024'  },
-  { id:'5', emoji:'🐢', bg:'#EAF3DE', name:'Shelly', desc:'Slow and steady tortoise who enjoys basking on warm sunlit rocks.',        date:'Dec 19, 2023' },
-  { id:'6', emoji:'🐇', bg:'#FBEAF0', name:'Coco',   desc:'Fluffy white rabbit who thumps loudly whenever she wants attention.',      date:'Nov 30, 2023' },
-  { id:'7', emoji:'🐠', bg:'#E6F1FB', name:'Nemo',   desc:'Bright orange clownfish living in a beautiful coral reef aquarium.',       date:'Oct 8, 2023'  },
-  { id:'8', emoji:'🐕', bg:'#F1EFE8', name:'Max',    desc:'Energetic border collie who excels at agility training courses.',          date:'Sep 15, 2023' },
-];
+
+const PAGE_SIZE = 8;
+
+
 
 export default function GalleryPage() {
-  const [search, setSearch]       = useState('');
-//   const [sort, setSort]           = useState<SortOption>('name-asc');
-  const [selected, setSelected]   = useState<Set<string>>(new Set(['1', '2']));
 
-//   const toggle = (id: string) => {
-//     setSelected(prev => {
-//       const next = new Set(prev);
-//     return  next.has(id) ? next.delete(id) : next.add(id);
-      
-//     });
-//   };
+  const {petsData, loading, error, refetch} = usePets();
+  const {selectAll, clear,isSelected,toggle,count,selectedIds} = useSelection();
+  const {estimateSize, downloadAll} = useDownload();
+  const [search, setSearch] = useState('');
+   const [sort,   setSort]   = useState<SortOption>('name-asc');
+  const [page,   setPage]   = useState(1);
 
-  const selectAll = () => setSelected(new Set(PETS.map(p => p.id)));
-  const clearAll  = () => setSelected(new Set());
+  
+
+  // Reset to page 1 when search/sort changes
+  useEffect(() => { setPage(1); }, [search,sort]);
+
+
+  const filteredPets = filterPets(petsData, search);
+   const sorted   =  sortPets(filteredPets, sort);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const paginated  = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const handleSelectAll = () => selectAll(filteredPets?.map(p => p.id));
+
+
+  const selectedPets = petsData.filter(p => selectedIds.has(p.id));
+
+if (error) return <Page><ErrorState message={error} onRetry={refetch} /></Page>;
+
 
   return (
     <Page>
 
       <Toolbar>
         <SearchBar value={search} onChange={setSearch} />
-        {/* <SortControls value={sort} onChange={setSort} /> */}
+        <SortControls value={sort} onChange={setSort} />
         <ActionGroup>
-          <ActionBtn onClick={selectAll}>Select all</ActionBtn>
-          <ActionBtn onClick={clearAll}>Clear</ActionBtn>
+          <ActionBtn onClick={handleSelectAll}>Select all</ActionBtn>
+          <ActionBtn onClick={clear}>Clear</ActionBtn>
         </ActionGroup>
       </Toolbar>
 
       <Main>
-        <ResultMeta>Showing {PETS.length} of 20 pets</ResultMeta>
+        {loading ? (
+          <ShimmerUI count ={PAGE_SIZE} />
+        ) : 
+        <>
+         <ResultMeta>  {search
+                ? `${sorted.length} result${sorted.length !== 1 ? 's' : ''} for "${search}"`
+                : `Showing ${paginated.length} of ${petsData.length} pets`}</ResultMeta>
 
         <Grid>
-          {PETS.map(pet => (
+          {paginated?.map((pet) => (
             <Card
               key={pet.id}
-              $selected={selected.has(pet.id)}
+              $selected={isSelected(pet.id)}
               as={Link}
                to={`/pets/${pet.id}`}
               style={{ textDecoration: 'none' }}
             >
-              <CardThumb $bg={pet.bg}>
-                {pet.emoji}
+              <CardThumb >
+                <CardImg src={pet.url} alt={pet.title} />
                 <Checkbox
-                  $checked={selected.has(pet.id)}
-                //   onClick={e => { e.preventDefault(); e.stopPropagation(); toggle(pet.id); }}
+                  $checked={isSelected(pet.id)}
+                  onClick={e => { e.preventDefault(); e.stopPropagation(); toggle(pet.id); }}
                   aria-label="Select"
                 >
                   <svg viewBox="0 0 12 12" fill="none">
@@ -276,29 +327,56 @@ export default function GalleryPage() {
                 </Checkbox>
               </CardThumb>
               <CardBody>
-                <CardName>{pet.name}</CardName>
-                <CardDesc>{pet.desc}</CardDesc>
-                <CardDate>{pet.date}</CardDate>
+                <CardName>{pet.title}</CardName>
+                <CardDesc>{pet.description}</CardDesc>
+                <CardDate>{pet.created}</CardDate>
               </CardBody>
             </Card>
           ))}
         </Grid>
 
-        <Pagination>
-          <PageBtn $active>1</PageBtn>
-          <PageBtn>2</PageBtn>
-          <PageBtn>3</PageBtn>
-          <PageBtn>›</PageBtn>
-        </Pagination>
+       {totalPages > 1 && (
+                  <Pagination>
+                    <NavBtn
+                      onClick={() => setPage(p => p - 1)}
+                      disabled={page === 1}
+                      title="Previous page"
+                    >
+                      ←
+                    </NavBtn>
+
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <PageBtn
+                        key={i + 1}
+                        $active={page === i + 1}
+                        onClick={() => setPage(i + 1)}
+                      >
+                        {i + 1}
+                      </PageBtn>
+                    ))}
+
+                    <NavBtn
+                      onClick={() => setPage(p => p + 1)}
+                      disabled={page === totalPages}
+                      title="Next page"
+                    >
+                      →
+                    </NavBtn>
+                  </Pagination>
+                )}
+        </>
+      
+      }
+       
       </Main>
 
-      <SelectionBar $visible={selected.size > 0}>
+      <SelectionBar $visible={count > 0}>
         <SelInfo>
-          <strong>{selected.size}</strong> of 20 pets selected · ~{(selected.size * 512 / 1024).toFixed(1)} MB
+          <strong>{count}</strong> of {petsData.length} selected · {estimateSize(count)}
         </SelInfo>
         <SelActions>
-          <ClearBtn onClick={clearAll}>Clear selection</ClearBtn>
-          <DownloadBtn>↓ Download selected</DownloadBtn>
+          <ClearBtn onClick={clear}>Clear selection</ClearBtn>
+          <DownloadBtn onClick={() => downloadAll(selectedPets)}>↓ Download selected</DownloadBtn>
         </SelActions>
       </SelectionBar>
 
