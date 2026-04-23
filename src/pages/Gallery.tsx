@@ -4,8 +4,12 @@ import styled from 'styled-components';
 import SearchBar from '../components/SearchBar/SearchBar';
 import { usePets } from '../hooks/usePets';
 import ShimmerUI from '../components/ShimmerUI/ShimmerUI';
-import { filterPets } from '../utils/filter';
+import { filterPets, sortPets } from '../utils/filter';
 import { useSelection } from '../context/SelectionContext';
+import ErrorState from '../components/ErrorState/ErrorState';
+import type { SortOption } from '../types/pets';
+import SortControls from '../components/SortControls/SortContols';
+import { useDownload } from '../hooks/useDownload';
 
 
 /* ── layout ── */
@@ -157,6 +161,32 @@ const Pagination = styled.div`
   margin-top: 40px;
 `;
 
+const NavBtn = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 15px;
+  transition: all 150ms ease;
+  cursor:pointer;
+
+  &:hover:not(:disabled) {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+`;
+
 const PageBtn = styled.button<{ $active?: boolean }>`
   width: 36px;
   height: 36px;
@@ -166,6 +196,7 @@ const PageBtn = styled.button<{ $active?: boolean }>`
   color: ${({ theme, $active }) => $active ? '#fff' : theme.colors.textSecondary};
   font-size: 13px;
   transition: all 150ms ease;
+  cursor:pointer;
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme, $active }) => $active ? '#fff' : theme.colors.primary};
@@ -227,38 +258,30 @@ const PAGE_SIZE = 8;
 
 export default function GalleryPage() {
 
-  const {petsData, loading} = usePets();
-  const {selectAll, clear,isSelected,toggle,count} = useSelection();
+  const {petsData, loading, error, refetch} = usePets();
+  const {selectAll, clear,isSelected,toggle,count,selectedIds} = useSelection();
+  const {estimateSize, downloadAll} = useDownload();
   const [search, setSearch] = useState('');
+   const [sort,   setSort]   = useState<SortOption>('name-asc');
   const [page,   setPage]   = useState(1);
-   const [selected, setSelected]   = useState<Set<string>>(new Set(['1', '2']));
 
   
 
   // Reset to page 1 when search/sort changes
-  useEffect(() => { setPage(1); }, [search]);
+  useEffect(() => { setPage(1); }, [search,sort]);
 
 
-const filteredPets = filterPets(petsData, search);
-  
-  const totalPages = Math.max(1, Math.ceil(filteredPets.length / PAGE_SIZE));
-  const paginated  = filteredPets.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const filteredPets = filterPets(petsData, search);
+   const sorted   =  sortPets(filteredPets, sort);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const paginated  = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleSelectAll = () => selectAll(filteredPets?.map(p => p.id));
 
 
+  const selectedPets = petsData.filter(p => selectedIds.has(p.id));
 
-//   const [sort, setSort]           = useState<SortOption>('name-asc');
- 
-//   const toggle = (id: string) => {
-//     setSelected(prev => {
-//       const next = new Set(prev);
-//     return  next.has(id) ? next.delete(id) : next.add(id);
-      
-//     });
-//   };
-
-
+if (error) return <Page><ErrorState message={error} onRetry={refetch} /></Page>;
 
 
   return (
@@ -266,7 +289,7 @@ const filteredPets = filterPets(petsData, search);
 
       <Toolbar>
         <SearchBar value={search} onChange={setSearch} />
-        {/* <SortControls value={sort} onChange={setSort} /> */}
+        <SortControls value={sort} onChange={setSort} />
         <ActionGroup>
           <ActionBtn onClick={handleSelectAll}>Select all</ActionBtn>
           <ActionBtn onClick={clear}>Clear</ActionBtn>
@@ -279,23 +302,23 @@ const filteredPets = filterPets(petsData, search);
         ) : 
         <>
          <ResultMeta>  {search
-                ? `${filteredPets.length} result${filteredPets.length !== 1 ? 's' : ''} for "${search}"`
+                ? `${sorted.length} result${sorted.length !== 1 ? 's' : ''} for "${search}"`
                 : `Showing ${paginated.length} of ${petsData.length} pets`}</ResultMeta>
 
         <Grid>
-          {paginated?.map((pet,index) => (
+          {paginated?.map((pet) => (
             <Card
-              key={`${pet.url}-${index}`}
-              $selected={selected.has(pet.id)}
+              key={pet.id}
+              $selected={isSelected(pet.id)}
               as={Link}
-               to={`/pets/${index}`}
+               to={`/pets/${pet.id}`}
               style={{ textDecoration: 'none' }}
             >
               <CardThumb >
                 <CardImg src={pet.url} alt={pet.title} />
                 <Checkbox
-                  $checked={isSelected(index)}
-                  onClick={e => { e.preventDefault(); e.stopPropagation(); toggle(index); }}
+                  $checked={isSelected(pet.id)}
+                  onClick={e => { e.preventDefault(); e.stopPropagation(); toggle(pet.id); }}
                   aria-label="Select"
                 >
                   <svg viewBox="0 0 12 12" fill="none">
@@ -314,15 +337,33 @@ const filteredPets = filterPets(petsData, search);
 
        {totalPages > 1 && (
                   <Pagination>
-                    <PageBtn onClick={() => setPage(p => p - 1)} disabled={page === 1}>‹</PageBtn>
+                    <NavBtn
+                      onClick={() => setPage(p => p - 1)}
+                      disabled={page === 1}
+                      title="Previous page"
+                    >
+                      ←
+                    </NavBtn>
+
                     {Array.from({ length: totalPages }, (_, i) => (
-                      <PageBtn key={i + 1} $active={page === i + 1} onClick={() => setPage(i + 1)}>
+                      <PageBtn
+                        key={i + 1}
+                        $active={page === i + 1}
+                        onClick={() => setPage(i + 1)}
+                      >
                         {i + 1}
                       </PageBtn>
                     ))}
-                    <PageBtn onClick={() => setPage(p => p + 1)} disabled={page === totalPages}>›</PageBtn>
+
+                    <NavBtn
+                      onClick={() => setPage(p => p + 1)}
+                      disabled={page === totalPages}
+                      title="Next page"
+                    >
+                      →
+                    </NavBtn>
                   </Pagination>
-                )}  
+                )}
         </>
       
       }
@@ -331,11 +372,11 @@ const filteredPets = filterPets(petsData, search);
 
       <SelectionBar $visible={count > 0}>
         <SelInfo>
-          <strong>{count}</strong> of {petsData.length} selected 
+          <strong>{count}</strong> of {petsData.length} selected · {estimateSize(count)}
         </SelInfo>
         <SelActions>
           <ClearBtn onClick={clear}>Clear selection</ClearBtn>
-          <DownloadBtn>↓ Download selected</DownloadBtn>
+          <DownloadBtn onClick={() => downloadAll(selectedPets)}>↓ Download selected</DownloadBtn>
         </SelActions>
       </SelectionBar>
 

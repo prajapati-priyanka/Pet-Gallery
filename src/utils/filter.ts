@@ -1,4 +1,4 @@
-import type { Pet } from "../types/pets";
+import type { Pet, SortOption } from "../types/pets";
 
 export function filterPets(pets: Pet[], query: string): Pet[] {
   const validSearch = query.toLowerCase().trim();
@@ -8,4 +8,23 @@ export function filterPets(pets: Pet[], query: string): Pet[] {
       pet.title.toLowerCase().includes(validSearch) ||
       pet.description.toLowerCase().includes(validSearch)
   );
+}
+
+export function sortPets(pets: Pet[], option: SortOption): Pet[] {
+  return [...pets].sort((a, b) => {
+    switch (option) {
+      case 'name-asc':
+        return a.title.localeCompare(b.title);
+      case 'name-desc':
+        return b.title.localeCompare(a.title);
+      case 'date-newest':
+        return new Date(b.created).getTime() - new Date(a.created).getTime()
+          || Number(b.id) - Number(a.id);
+      case 'date-oldest':
+        return new Date(a.created).getTime() - new Date(b.created).getTime()
+          || Number(a.id) - Number(b.id);
+      default:
+        return 0;
+    }
+  });
 }

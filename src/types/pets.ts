@@ -5,3 +5,5 @@ export interface Pet {
     url: string
     created: string
 }
+
+export type SortOption = 'name-asc' | 'name-desc' | 'date-newest' | 'date-oldest';

@@ -3,7 +3,7 @@ import { createContext, useContext, useReducer, type ReactNode } from "react";
 interface SelectionState { selectedIds: Set<string>; }
 
 type Action =
-  | { type: 'TOGGLE'; id: string | number}
+  | { type: 'TOGGLE'; id: string}
   | { type: 'SELECT_ALL'; ids: string[] }
   | { type: 'CLEAR' };
 
@@ -31,7 +31,7 @@ interface Ctx{
     selectAll : (ids: string[]) => void;
     clear: ()=> void;
     count: number;
-    isSelected: (id: string | number) => boolean
+    isSelected: (id: string) => boolean
 }
 
 const SelectionContext = createContext<Ctx | null>(null)
