@@ -4,28 +4,26 @@ import type { Pet } from "../types/pets";
 interface UsePetResult {
   petsData: Pet[];
   loading: boolean;
-  error: string | null,
-  isEmpty: boolean,
-refetch: () => void;
+  error: string | null;
+  isEmpty: boolean;
+  refetch: () => void;
 }
 
 export function usePets(): UsePetResult {
   const [petsData, setPetsData] = useState<Pet[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-const [error, setError]     = useState<string | null>(null);
- const [tick, setTick]       = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     async function getPets() {
       setLoading(true);
-      setError(null)
+      setError(null);
 
       try {
         let pets: Pet[] = [];
 
-        const res = await fetch(
-          "https://eulerity-hackathon.appspot.com/pets",
-        );
+        const res = await fetch("https://eulerity-hackathon.appspot.com/pets");
         if (!res.ok) throw new Error("API not available");
         const json = await res.json();
         pets = (Array.isArray(json) ? json : []).map((p: Pet, i: number) => ({
@@ -37,8 +35,12 @@ const [error, setError]     = useState<string | null>(null);
         }));
 
         setPetsData(pets);
-      } catch (err: any) {
-        setError(err.message ?? 'Something went wrong');
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Something went wrong");
+        }
       } finally {
         setLoading(false);
       }
@@ -46,5 +48,11 @@ const [error, setError]     = useState<string | null>(null);
     getPets();
   }, [tick]);
 
-  return { petsData, loading, error,  isEmpty: !loading && !error && petsData.length === 0, refetch: () => setTick(t => t + 1),};
+  return {
+    petsData,
+    loading,
+    error,
+    isEmpty: !loading && !error && petsData.length === 0,
+    refetch: () => setTick((t) => t + 1),
+  };
 }

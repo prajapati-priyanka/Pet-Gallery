@@ -1,15 +1,15 @@
-import  { useEffect, useState } from 'react';
+import  { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import SearchBar from '../components/SearchBar/SearchBar';
 import { usePets } from '../hooks/usePets';
 import ShimmerUI from '../components/ShimmerUI/ShimmerUI';
 import { filterPets, sortPets } from '../utils/filter';
-import { useSelection } from '../context/SelectionContext';
 import ErrorState from '../components/ErrorState/ErrorState';
 import type { SortOption } from '../types/pets';
 import SortControls from '../components/SortControls/SortContols';
 import { useDownload } from '../hooks/useDownload';
+import { useSelection } from '../hooks/useSelection';
 
 
 /* ── layout ── */
@@ -266,17 +266,22 @@ export default function GalleryPage() {
   const [page,   setPage]   = useState(1);
 
   
-
-  // Reset to page 1 when search/sort changes
-  useEffect(() => { setPage(1); }, [search,sort]);
-
-
   const filteredPets = filterPets(petsData, search);
    const sorted   =  sortPets(filteredPets, sort);
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paginated  = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleSelectAll = () => selectAll(filteredPets?.map(p => p.id));
+
+  const handleSearchChange = (value: string) => {
+  setSearch(value);
+  setPage(1);       
+};
+
+const handleSortChange = (value: SortOption) => {
+  setSort(value);
+  setPage(1);       
+};
 
 
   const selectedPets = petsData.filter(p => selectedIds.has(p.id));
@@ -288,8 +293,8 @@ if (error) return <Page><ErrorState message={error} onRetry={refetch} /></Page>;
     <Page>
 
       <Toolbar>
-        <SearchBar value={search} onChange={setSearch} />
-        <SortControls value={sort} onChange={setSort} />
+        <SearchBar value={search} onChange={handleSearchChange} />
+        <SortControls value={sort} onChange={handleSortChange} />
         <ActionGroup>
           <ActionBtn onClick={handleSelectAll}>Select all</ActionBtn>
           <ActionBtn onClick={clear}>Clear</ActionBtn>

@@ -7,12 +7,13 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Gallery from './pages/Gallery';
 import AboutMe from './pages/AboutMe';
 import PetDetails from './pages/PetDetails';
-import { SelectionProvider } from './context/SelectionContext';
+import { SelectionProvider } from './context/SelectionProvider';
+
 
 function App() {  
 
   return (
-    <SelectionProvider>
+  <SelectionProvider>
   <BrowserRouter>
     <ThemeProvider theme={theme}>
      <Navbar />
