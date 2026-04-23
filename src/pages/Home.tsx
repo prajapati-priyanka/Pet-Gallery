@@ -66,23 +66,6 @@ const PrimaryBtn = styled(Link)`
 
 `;
 
-const GhostBtn = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  font-size: 14px;
-  padding: 13px 24px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  transition: border-color 150ms ease, color 150ms ease;
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.primary};
-    color: ${({ theme }) => theme.colors.primary};
-  }
-  text-decoration: none
-
-`;
-
 
 export default function HomePage() {
   return (
@@ -101,7 +84,6 @@ export default function HomePage() {
         </Sub>
         <BtnRow>
           <PrimaryBtn to="/gallery">Browse gallery →</PrimaryBtn>
-          <GhostBtn to="/about_me">About this project</GhostBtn>
         </BtnRow>
       </Hero>
 
