@@ -14,7 +14,7 @@ const Nav = styled.nav`
   z-index: 100;
 `;
 
-const Logo = styled.span`
+const Logo = styled(Link)`
   display: flex;
   align-items: center;
   gap: 9px;
@@ -54,7 +54,7 @@ export default function Navbar() {
 return (
   
      <Nav>
-      <Logo>
+      <Logo to="/">
         <LogoDot />
         PetGallery
       </Logo>
