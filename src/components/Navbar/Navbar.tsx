@@ -56,7 +56,7 @@ return (
      <Nav>
       <Logo to="/">
         <LogoDot />
-        PetGallery
+        PawFolio
       </Logo>
       <Links>
         <NavLink to="/"  $active={pathname === "/"}>Home</NavLink>
