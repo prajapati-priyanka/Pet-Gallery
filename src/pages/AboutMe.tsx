@@ -219,7 +219,7 @@ export default function AboutMe() {
         <DevName>Priyanka Prajapati</DevName>
         <DevRole>Frontend Developer · React &amp; TypeScript</DevRole>
         <Bio>
-          I built PetGallery as a take-home challenge to demonstrate my skills in
+          I built PawFolio as a take-home challenge to demonstrate my skills in
           React, TypeScript, and modern frontend architecture. I care deeply about
           clean code, accessible UI, and user experiences that feel effortless.
         </Bio>
