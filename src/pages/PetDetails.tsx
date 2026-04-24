@@ -58,7 +58,7 @@ const ImagePanel = styled.div`
 `;
 const PetImg = styled.img`
   width: 100%;
-  height: 360px;
+  height: 30rem;
   object-fit: cover;
   display: block;
   background: ${({ theme }) => theme.colors.primaryLight};
