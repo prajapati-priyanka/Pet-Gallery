@@ -1,23 +1,23 @@
-import  { useState } from 'react';
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import SearchBar from '../components/SearchBar/SearchBar';
-import { usePets } from '../hooks/usePets';
-import ShimmerUI from '../components/ShimmerUI/ShimmerUI';
-import { filterPets, sortPets } from '../utils/filter';
-import ErrorState from '../components/ErrorState/ErrorState';
-import type { SortOption } from '../types/pets';
-import SortControls from '../components/SortControls/SortContols';
-import { useDownload } from '../hooks/useDownload';
-import { useSelection } from '../hooks/useSelection';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import styled from "styled-components";
+import SearchBar from "../components/SearchBar/SearchBar";
+import { usePets } from "../hooks/usePets";
+import ShimmerUI from "../components/ShimmerUI/ShimmerUI";
+import { filterPets, sortPets } from "../utils/filter";
+import ErrorState from "../components/ErrorState/ErrorState";
+import type { SortOption } from "../types/pets";
+import SortControls from "../components/SortControls/SortContols";
+import { useDownload } from "../hooks/useDownload";
+import { useSelection } from "../hooks/useSelection";
 
-
-/* ── layout ── */
+// Page layout
 const Page = styled.div`
   min-height: 100vh;
   background: ${({ theme }) => theme.colors.bg};
 `;
 
+// Top toolbar containing search + sort + actions
 const Toolbar = styled.div`
   display: flex;
   align-items: center;
@@ -49,6 +49,7 @@ const ActionBtn = styled.button`
   }
 `;
 
+// Main content container
 const Main = styled.main`
   padding: 28px 40px 120px;
   max-width: 1200px;
@@ -61,29 +62,38 @@ const ResultMeta = styled.div`
   margin-bottom: 20px;
 `;
 
+// Responsive grid for cards
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 
-  @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 600px)  { grid-template-columns: 1fr; }
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-/* ── card ── */
+// card
 const Card = styled.article<{ $selected: boolean }>`
   background: ${({ theme }) => theme.colors.surface};
   border-radius: ${({ theme }) => theme.radii.lg};
-  border: 1.5px solid ${({ theme, $selected }) =>
-    $selected ? theme.colors.primary : theme.colors.border};
+  border: 1.5px solid
+    ${({ theme, $selected }) =>
+      $selected ? theme.colors.primary : theme.colors.border};
   overflow: hidden;
   cursor: pointer;
-  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
   position: relative;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(216,90,48,0.10);
+    box-shadow: 0 4px 16px rgba(216, 90, 48, 0.1);
     border-color: ${({ theme, $selected }) =>
       $selected ? theme.colors.primary : theme.colors.primaryMid};
   }
@@ -107,6 +117,7 @@ const CardImg = styled.img`
   }
 `;
 
+// Checkbox for selecting items
 const Checkbox = styled.button<{ $checked: boolean }>`
   position: absolute;
   top: 10px;
@@ -114,9 +125,10 @@ const Checkbox = styled.button<{ $checked: boolean }>`
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  border: 2px solid ${({ $checked }) => ($checked ? 'transparent' : 'rgba(255,255,255,0.85)')};
+  border: 2px solid
+    ${({ $checked }) => ($checked ? "transparent" : "rgba(255,255,255,0.85)")};
   background: ${({ theme, $checked }) =>
-    $checked ? theme.colors.primary : 'rgba(0,0,0,0.22)'};
+    $checked ? theme.colors.primary : "rgba(0,0,0,0.22)"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -134,13 +146,20 @@ const Checkbox = styled.button<{ $checked: boolean }>`
 
   &:hover {
     background: ${({ theme, $checked }) =>
-      $checked ? theme.colors.primaryDark : 'rgba(0,0,0,0.4)'};
+      $checked ? theme.colors.primaryDark : "rgba(0,0,0,0.4)"};
     border-color: transparent;
   }
 `;
 
-const CardBody = styled.div` padding: 12px 14px 14px; `;
-const CardName = styled.h3` font-size: 14px; font-weight: 500; color: ${({ theme }) => theme.colors.textPrimary}; margin-bottom: 4px; `;
+const CardBody = styled.div`
+  padding: 12px 14px 14px;
+`;
+const CardName = styled.h3`
+  font-size: 14px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin-bottom: 4px;
+`;
 const CardDesc = styled.p`
   font-size: 12px;
   color: ${({ theme }) => theme.colors.textSecondary};
@@ -151,9 +170,12 @@ const CardDesc = styled.p`
   overflow: hidden;
   margin-bottom: 8px;
 `;
-const CardDate = styled.span` font-size: 11px; color: ${({ theme }) => theme.colors.textTertiary}; `;
+const CardDate = styled.span`
+  font-size: 11px;
+  color: ${({ theme }) => theme.colors.textTertiary};
+`;
 
-/* ── pagination ── */
+// pagination
 const Pagination = styled.div`
   display: flex;
   justify-content: center;
@@ -173,7 +195,7 @@ const NavBtn = styled.button`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: 15px;
   transition: all 150ms ease;
-  cursor:pointer;
+  cursor: pointer;
 
   &:hover:not(:disabled) {
     border-color: ${({ theme }) => theme.colors.primary};
@@ -191,19 +213,23 @@ const PageBtn = styled.button<{ $active?: boolean }>`
   width: 36px;
   height: 36px;
   border-radius: ${({ theme }) => theme.radii.md};
-  border: 1px solid ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
-  background: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.surface};
-  color: ${({ theme, $active }) => $active ? '#fff' : theme.colors.textSecondary};
+  border: 1px solid
+    ${({ theme, $active }) =>
+      $active ? theme.colors.primary : theme.colors.border};
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.primary : theme.colors.surface};
+  color: ${({ theme, $active }) =>
+    $active ? "#fff" : theme.colors.textSecondary};
   font-size: 13px;
   transition: all 150ms ease;
-  cursor:pointer;
+  cursor: pointer;
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
-    color: ${({ theme, $active }) => $active ? '#fff' : theme.colors.primary};
+    color: ${({ theme, $active }) => ($active ? "#fff" : theme.colors.primary)};
   }
 `;
 
-/* ── selection bar ── */
+// selection bar
 const SelectionBar = styled.div<{ $visible: boolean }>`
   position: fixed;
   bottom: 0;
@@ -216,17 +242,25 @@ const SelectionBar = styled.div<{ $visible: boolean }>`
   padding: 16px 40px;
   background: ${({ theme }) => theme.colors.surface};
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-  transform: translateY(${({ $visible }) => ($visible ? '0' : '100%')});
+  transform: translateY(
+    ${({ $visible }) => ($visible ? "0" : "100%")}
+  ); // slides up when items are selected
   transition: transform 280ms ease;
 `;
 
 const SelInfo = styled.span`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.textSecondary};
-  strong { color: ${({ theme }) => theme.colors.textPrimary}; font-weight: 500; }
+  strong {
+    color: ${({ theme }) => theme.colors.textPrimary};
+    font-weight: 500;
+  }
 `;
 
-const SelActions = styled.div` display: flex; gap: 8px; `;
+const SelActions = styled.div`
+  display: flex;
+  gap: 8px;
+`;
 
 const ClearBtn = styled.button`
   font-size: 13px;
@@ -236,7 +270,10 @@ const ClearBtn = styled.button`
   background: transparent;
   color: ${({ theme }) => theme.colors.textSecondary};
   transition: all 150ms ease;
-  &:hover { border-color: ${({ theme }) => theme.colors.primary}; color: ${({ theme }) => theme.colors.primary}; }
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `;
 
 const DownloadBtn = styled.button`
@@ -248,50 +285,64 @@ const DownloadBtn = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   color: #fff;
   transition: opacity 150ms ease;
-  &:hover { opacity: 0.88; }
+  &:hover {
+    opacity: 0.88;
+  }
 `;
-
 
 const PAGE_SIZE = 8;
 
-
-
 export default function GalleryPage() {
+  const { petsData, loading, error, refetch } = usePets();
 
-  const {petsData, loading, error, refetch} = usePets();
-  const {selectAll, clear,isSelected,toggle,count,selectedIds} = useSelection();
-  const {estimateSize, downloadAll} = useDownload();
-  const [search, setSearch] = useState('');
-   const [sort,   setSort]   = useState<SortOption>('name-asc');
-  const [page,   setPage]   = useState(1);
+  //  Global selection state (context)
+  const { selectAll, clear, isSelected, toggle, count, selectedIds } =
+    useSelection();
 
-  
+  // File Download utilities
+  const { estimateSize, downloadAll } = useDownload();
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortOption>("name-asc");
+  const [page, setPage] = useState(1);
+
+  //  search filter
   const filteredPets = filterPets(petsData, search);
-   const sorted   =  sortPets(filteredPets, sort);
+
+  // sorting
+  const sorted = sortPets(filteredPets, sort);
+
+  // Pagination calculation
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
-  const paginated  = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const handleSelectAll = () => selectAll(filteredPets?.map(p => p.id));
+  // Select all currently visible (filtered) pets
+  const handleSelectAll = () => selectAll(filteredPets?.map((p) => p.id));
 
+  // Reset to first page when search changes
   const handleSearchChange = (value: string) => {
-  setSearch(value);
-  setPage(1);       
-};
+    setSearch(value);
+    setPage(1);
+  };
 
-const handleSortChange = (value: SortOption) => {
-  setSort(value);
-  setPage(1);       
-};
+  // Reset to first page when sort changes
+  const handleSortChange = (value: SortOption) => {
+    setSort(value);
+    setPage(1);
+  };
 
+  // Get selected pets
+  const selectedPets = petsData.filter((p) => selectedIds.has(p.id));
 
-  const selectedPets = petsData.filter(p => selectedIds.has(p.id));
-
-if (error) return <Page><ErrorState message={error} onRetry={refetch} /></Page>;
-
+  // Error handling from API
+  if (error)
+    return (
+      <Page>
+        <ErrorState message={error} onRetry={refetch} />
+      </Page>
+    );
 
   return (
     <Page>
-
       <Toolbar>
         <SearchBar value={search} onChange={handleSearchChange} />
         <SortControls value={sort} onChange={handleSortChange} />
@@ -303,88 +354,98 @@ if (error) return <Page><ErrorState message={error} onRetry={refetch} /></Page>;
 
       <Main>
         {loading ? (
-          <ShimmerUI count ={PAGE_SIZE} />
-        ) : 
-        <>
-         <ResultMeta>  {search
-                ? `${sorted.length} result${sorted.length !== 1 ? 's' : ''} for "${search}"`
-                : `Showing ${paginated.length} of ${petsData.length} pets`}</ResultMeta>
+          // Loading Skeleton
+          <ShimmerUI count={PAGE_SIZE} />
+        ) : (
+          <>
+            <ResultMeta>
+              {" "}
+              {search
+                ? `${sorted.length} result${sorted.length !== 1 ? "s" : ""} for "${search}"`
+                : `Showing ${paginated.length} of ${petsData.length} pets`}
+            </ResultMeta>
 
-        <Grid>
-          {paginated?.map((pet) => (
-            <Card
-              key={pet.id}
-              $selected={isSelected(pet.id)}
-              as={Link}
-               to={`/pets/${pet.id}`}
-              style={{ textDecoration: 'none' }}
-            >
-              <CardThumb >
-                <CardImg src={pet.url} alt={pet.title} />
-                <Checkbox
-                  $checked={isSelected(pet.id)}
-                  onClick={e => { e.preventDefault(); e.stopPropagation(); toggle(pet.id); }}
-                  aria-label="Select"
+            <Grid>
+              {paginated?.map((pet) => (
+                <Card
+                  key={pet.id}
+                  $selected={isSelected(pet.id)}
+                  as={Link}
+                  to={`/pets/${pet.id}`}
+                  style={{ textDecoration: "none" }}
                 >
-                  <svg viewBox="0 0 12 12" fill="none">
-                    <polyline points="2,6 5,9 10,3" />
-                  </svg>
-                </Checkbox>
-              </CardThumb>
-              <CardBody>
-                <CardName>{pet.title}</CardName>
-                <CardDesc>{pet.description}</CardDesc>
-                <CardDate>{pet.created}</CardDate>
-              </CardBody>
-            </Card>
-          ))}
-        </Grid>
-
-       {totalPages > 1 && (
-                  <Pagination>
-                    <NavBtn
-                      onClick={() => setPage(p => p - 1)}
-                      disabled={page === 1}
-                      title="Previous page"
+                  <CardThumb>
+                    <CardImg src={pet.url} alt={pet.title} />
+                    <Checkbox
+                      $checked={isSelected(pet.id)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggle(pet.id);
+                      }} // prevent event bubbling when clicked on checkbox
+                      aria-label="Select"
                     >
-                      ←
-                    </NavBtn>
+                      <svg viewBox="0 0 12 12" fill="none">
+                        <polyline points="2,6 5,9 10,3" />
+                      </svg>
+                    </Checkbox>
+                  </CardThumb>
+                  <CardBody>
+                    <CardName>{pet.title}</CardName>
+                    <CardDesc>{pet.description}</CardDesc>
+                    <CardDate>{pet.created}</CardDate>
+                  </CardBody>
+                </Card>
+              ))}
+            </Grid>
 
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <PageBtn
-                        key={i + 1}
-                        $active={page === i + 1}
-                        onClick={() => setPage(i + 1)}
-                      >
-                        {i + 1}
-                      </PageBtn>
-                    ))}
+            {/* Pagination Section */}
+            {totalPages > 1 && (
+              <Pagination>
+                <NavBtn
+                  onClick={() => setPage((p) => p - 1)}
+                  disabled={page === 1}
+                  title="Previous page"
+                >
+                  ←
+                </NavBtn>
 
-                    <NavBtn
-                      onClick={() => setPage(p => p + 1)}
-                      disabled={page === totalPages}
-                      title="Next page"
-                    >
-                      →
-                    </NavBtn>
-                  </Pagination>
-                )}
-        </>
-      
-      }
-       
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <PageBtn
+                    key={i + 1}
+                    $active={page === i + 1}
+                    onClick={() => setPage(i + 1)}
+                  >
+                    {i + 1}
+                  </PageBtn>
+                ))}
+
+                <NavBtn
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page === totalPages}
+                  title="Next page"
+                >
+                  →
+                </NavBtn>
+              </Pagination>
+            )}
+          </>
+        )}
       </Main>
 
+      {/* Bottom selection bar appears ONLY when items selected */}
       <SelectionBar $visible={count > 0}>
         <SelInfo>
-          <strong>{count}</strong> of {petsData.length} selected · {estimateSize(count)}
+          <strong>{count}</strong> of {petsData.length} selected ·{" "}
+          {estimateSize(count)}
         </SelInfo>
         <SelActions>
           <ClearBtn onClick={clear}>Clear selection</ClearBtn>
-          <DownloadBtn onClick={() => downloadAll(selectedPets)}>↓ Download selected</DownloadBtn>
+          <DownloadBtn onClick={() => downloadAll(selectedPets)}>
+            ↓ Download selected
+          </DownloadBtn>
         </SelActions>
       </SelectionBar>
-
     </Page>
   );
 }

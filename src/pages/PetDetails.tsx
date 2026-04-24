@@ -6,17 +6,20 @@ import { useDownload } from "../hooks/useDownload";
 import { formatDate } from "../utils/filter";
 import { useSelection } from "../hooks/useSelection";
 
+// Animation for smooth page entry
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 `;
 
+// Root container
 const Page = styled.div`
   min-height: 100vh;
   background: ${({ theme }) => theme.colors.bg};
   animation: ${fadeUp} 0.4s ease both;
 `;
 
+// For navigation context
 const Breadcrumb = styled.div`
   display: flex;
   align-items: center;
@@ -38,6 +41,7 @@ const Sep = styled.span`
   color: ${({ theme }) => theme.colors.border};
 `;
 
+// Layout splits image + details
 const Content = styled.div`
   max-width: 1000px;
   margin: 40px auto;
@@ -51,6 +55,7 @@ const Content = styled.div`
   }
 `;
 
+// Image container
 const ImagePanel = styled.div`
   border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
@@ -63,6 +68,8 @@ const PetImg = styled.img`
   display: block;
   background: ${({ theme }) => theme.colors.primaryLight};
 `;
+
+// Fallback when image fails to load
 const PetImgFallback = styled.div`
   width: 100%;
   height: 360px;
@@ -84,6 +91,8 @@ const ImageMetaText = styled.span`
   font-size: 12px;
   color: ${({ theme }) => theme.colors.textTertiary};
 `;
+
+// Download button
 const DlImgBtn = styled.button`
   font-size: 12px;
   font-weight: 500;
@@ -101,6 +110,8 @@ const DlImgBtn = styled.button`
 `;
 
 const InfoPanel = styled.div``;
+
+// Back to gallery Navigation
 const BackLink = styled(Link)`
   display: inline-flex;
   align-items: center;
@@ -142,6 +153,8 @@ const Actions = styled.div`
   gap: 10px;
   flex-wrap: wrap;
 `;
+
+// Download Button on Details Section
 const PrimaryBtn = styled.button`
   font-size: 14px;
   font-weight: 500;
@@ -156,6 +169,8 @@ const PrimaryBtn = styled.button`
   }
   cursor: pointer;
 `;
+
+// Selection Button on Details Section
 const SecondaryBtn = styled.button<{ $active?: boolean }>`
   font-size: 14px;
   padding: 11px 22px;
@@ -176,6 +191,7 @@ const SecondaryBtn = styled.button<{ $active?: boolean }>`
   }
 `;
 
+// Related Section
 const Related = styled.section`
   max-width: 1000px;
   margin: 0 auto 60px;
@@ -230,6 +246,7 @@ const RelImg = styled.img`
   }
 `;
 
+// Fallback for related images
 const RelImgFallback = styled.div`
   width: 100%;
   height: 90px;
@@ -273,6 +290,7 @@ const NotFound = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
+// handles image failure for each related cards
 const RelImgWithFallback = ({ src, alt }: { src: string; alt: string }) => {
   const [err, setErr] = useState(false);
   return (
@@ -305,6 +323,7 @@ export default function DetailPage() {
       </Page>
     );
 
+  // Handle case when invalid id is access
   const pet = petsData.find((p) => p.id === id);
   if (!pet)
     return (
@@ -322,7 +341,10 @@ export default function DetailPage() {
       </Page>
     );
 
+    // Get related pets
   const related = petsData.filter((p) => p.id !== pet.id).slice(0, 4);
+
+  // check selection state
   const selected = isSelected(pet.id);
 
   return (
