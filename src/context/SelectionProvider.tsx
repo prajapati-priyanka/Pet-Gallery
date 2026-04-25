@@ -1,8 +1,6 @@
 import { useReducer, type ReactNode } from "react";
-import {
-  SelectionContext,
-  type SelectionContextType,
-} from "./SelectionContext";
+import { SelectionContext, type SelectionContextType } from "./selectionContext";
+
 
 interface SelectionState {
   selectedIds: Set<string>;
