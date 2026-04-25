@@ -267,6 +267,7 @@ export default function AboutMe() {
             <Skill $primary>Javascript</Skill>
             <Skill>REST APIs</Skill>
             <Skill>Git</Skill>
+            <Skill>Tailwind CSS</Skill>
             <Skill>JEST</Skill>
             <Skill>Redux Toolkit</Skill>
             <Skill>Accessibility</Skill>
