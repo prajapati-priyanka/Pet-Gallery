@@ -2,6 +2,13 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
 
+// Wrap both Nav and MobileMenu in a sticky container
+const NavWrapper = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  position: relative; 
+`;
 const Nav = styled.nav`
   display: flex;
   align-items: center;
@@ -85,19 +92,17 @@ const MobileMenu = styled.div<{ $open: boolean }>`
   @media (max-width: 600px) {
     display: flex;
     flex-direction: column;
-    position: absolute;
+    position: absolute;   /* ✅ overlays content instead of pushing it */
     top: 60px;
     left: 0;
     right: 0;
     background: ${({ theme }) => theme.colors.surface};
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-    padding: ${({ $open }) => ($open ? "16px 20px 20px" : "0 20px")};
+    padding: ${({ $open }) => ($open ? '16px 20px 20px' : '0 20px')};
     gap: 16px;
     overflow: hidden;
-    max-height: ${({ $open }) => ($open ? "260px" : "0")};
-    transition:
-      max-height 280ms ease,
-      padding 280ms ease;
+    max-height: ${({ $open }) => ($open ? '260px' : '0')};
+    transition: max-height 280ms ease, padding 280ms ease;
   }
 `;
 
@@ -127,7 +132,7 @@ export default function Navbar() {
   const close = () => setOpen(false);
 
   return (
-    <>
+    <NavWrapper>
       <Nav>
         <Logo to="/">
           <LogoIcon>
@@ -180,10 +185,14 @@ export default function Navbar() {
           Gallery
         </MobileLink>
 
-        <MobileLink to="/about_me" $active={pathname === "/about_me"} onClick={close}>
+        <MobileLink
+          to="/about_me"
+          $active={pathname === "/about_me"}
+          onClick={close}
+        >
           About
         </MobileLink>
       </MobileMenu>
-    </>
+    </NavWrapper>
   );
 }

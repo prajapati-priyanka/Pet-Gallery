@@ -3,7 +3,6 @@ import styled from "styled-components";
 
 const Main = styled.div`
   background: ${({ theme }) => theme.colors.bg};
-  min-height: 100vh;
 `;
 
 const Hero = styled.section`
@@ -13,7 +12,7 @@ const Hero = styled.section`
   text-align: center;
 
   @media (max-width: 600px) {
-    padding: 60px 20px 48px;
+    padding: 48px 24px 40px;
   }
 `;
 
@@ -46,6 +45,7 @@ const Sub = styled.p`
 
   @media (max-width: 600px) {
     font-size: 14px;
+    margin-bottom: 28px;
   }
 `;
 
@@ -54,11 +54,16 @@ const BtnRow = styled.div`
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    width: 100%;
+  }
 `;
 
 const PrimaryBtn = styled(Link)`
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-size: 14px;
   font-weight: 500;
@@ -67,10 +72,13 @@ const PrimaryBtn = styled(Link)`
   color: #fff;
   border-radius: ${({ theme }) => theme.radii.md};
   transition: opacity 150ms ease;
-  &:hover {
-    opacity: 0.88;
-  }
   text-decoration: none;
+  &:hover { opacity: 0.88; }
+
+  @media (max-width: 600px) {
+    width: 60%;
+    padding: 14px;
+  }
 `;
 
 export default function HomePage() {

@@ -26,12 +26,22 @@ const Toolbar = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    padding: 12px 16px;
+    gap: 8px;
+  }
 `;
 
 const ActionGroup = styled.div`
   display: flex;
   gap: 6px;
   margin-left: auto;
+
+  @media (max-width: 600px) {
+    margin-left: 0;
+    width: 100%;
+  }
 `;
 
 const ActionBtn = styled.button`
@@ -47,6 +57,11 @@ const ActionBtn = styled.button`
     border-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.primary};
   }
+
+  @media (max-width: 600px) {
+    flex: 1;
+    height: 36px;
+  }
 `;
 
 // Main content container
@@ -54,6 +69,10 @@ const Main = styled.main`
   padding: 28px 40px 120px;
   max-width: 1200px;
   margin: 0 auto;
+
+  @media (max-width: 600px) {
+    padding: 20px 16px 140px;
+  }
 `;
 
 const ResultMeta = styled.div`
@@ -242,10 +261,15 @@ const SelectionBar = styled.div<{ $visible: boolean }>`
   padding: 16px 40px;
   background: ${({ theme }) => theme.colors.surface};
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-  transform: translateY(
-    ${({ $visible }) => ($visible ? "0" : "100%")}
-  ); // slides up when items are selected
+  transform: translateY(${({ $visible }) => ($visible ? '0' : '100%')});
   transition: transform 280ms ease;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+  }
 `;
 
 const SelInfo = styled.span`
@@ -260,6 +284,10 @@ const SelInfo = styled.span`
 const SelActions = styled.div`
   display: flex;
   gap: 8px;
+
+  @media (max-width: 600px) {
+    width: 100%;
+  }
 `;
 
 const ClearBtn = styled.button`
@@ -274,6 +302,10 @@ const ClearBtn = styled.button`
     border-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.primary};
   }
+
+  @media (max-width: 600px) {
+    flex: 1;
+  }
 `;
 
 const DownloadBtn = styled.button`
@@ -285,8 +317,10 @@ const DownloadBtn = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   color: #fff;
   transition: opacity 150ms ease;
-  &:hover {
-    opacity: 0.88;
+  &:hover { opacity: 0.88; }
+
+  @media (max-width: 600px) {
+    flex: 1;
   }
 `;
 

@@ -11,13 +11,16 @@ const Page = styled.div`
   background: ${({ theme }) => theme.colors.bg};
 `;
 
-/* ── hero band ── */
 const HeroBand = styled.div`
   background: ${({ theme }) => theme.colors.primaryLight};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   padding: 64px 40px;
   text-align: center;
   animation: ${fadeUp} 0.45s ease both;
+
+  @media (max-width: 600px) {
+    padding: 40px 20px;
+  }
 `;
 
 const Avatar = styled.div`
@@ -41,6 +44,10 @@ const DevName = styled.h1`
   font-weight: 400;
   color: ${({ theme }) => theme.colors.primaryDeep};
   margin-bottom: 6px;
+
+  @media (max-width: 600px) {
+    font-size: 26px;
+  }
 `;
 
 const DevRole = styled.p`
@@ -57,11 +64,10 @@ const Bio = styled.p`
   margin: 0 auto;
 `;
 
-/* ── body ── */
 const Body = styled.div`
   max-width: 820px;
   margin: 0 auto;
-  padding: 56px 40px 80px;
+  padding: 56px 40px 32px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 32px;
@@ -69,6 +75,7 @@ const Body = styled.div`
   opacity: 0;
 
   @media (max-width: 700px) { grid-template-columns: 1fr; }
+  @media (max-width: 600px) { padding: 32px 20px 24px; }
 `;
 
 const Section = styled.section``;
@@ -137,13 +144,16 @@ const TDesc = styled.div`
   line-height: 1.6;
 `;
 
-/* ── contact ── */
 const FullWidth = styled.div`
   max-width: 820px;
   margin: 0 auto;
-  padding: 0 40px 80px;
+  padding: 0 40px 60px;
   animation: ${fadeUp} 0.45s 0.2s ease both;
   opacity: 0;
+
+  @media (max-width: 600px) {
+    padding: 0 20px 40px;
+  }
 `;
 
 const ContactCard = styled.div`
@@ -156,6 +166,12 @@ const ContactCard = styled.div`
   justify-content: space-between;
   gap: 20px;
   flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    padding: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `;
 
 const ContactText = styled.div``;
@@ -170,7 +186,15 @@ const ContactSub = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
-const ContactLinks = styled.div` display: flex; gap: 10px; `;
+const ContactLinks = styled.div`
+  display: flex;
+  gap: 10px;
+
+  @media (max-width: 600px) {
+    width: 100%;
+  }
+`;
+
 
 const ContactBtn = styled.a`
   font-size: 13px;
@@ -180,11 +204,18 @@ const ContactBtn = styled.a`
   border: 1px solid ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.textSecondary};
   background: ${({ theme }) => theme.colors.bg};
-  transition: all 150ms ease;
   cursor: pointer;
+  white-space: nowrap;
+  transition: all 150ms ease;
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.primary};
+  }
+
+  @media (max-width: 600px) {
+    flex: 1;
+    text-align: center;
+    padding: 9px 8px;
   }
 `;
 
