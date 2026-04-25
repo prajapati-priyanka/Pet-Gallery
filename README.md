@@ -53,7 +53,7 @@ src/
 │   ├── AboutMe.tsx         
 │   ├── Gallery.tsx    
 │   ├── Home.tsx      
-│   └── PetDetsild.tsx       
+│   └── PetDetails.tsx       
 ├── theme/
 │   ├── globalStyle.ts          
 │   └── theme.ts  
