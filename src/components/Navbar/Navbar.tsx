@@ -179,7 +179,8 @@ export default function Navbar() {
         >
           Gallery
         </MobileLink>
-        <MobileLink to="/about" $active={pathname === "/about"} onClick={close}>
+
+        <MobileLink to="/about_me" $active={pathname === "/about_me"} onClick={close}>
           About
         </MobileLink>
       </MobileMenu>

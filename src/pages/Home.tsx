@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 const Main = styled.div`
   background: ${({ theme }) => theme.colors.bg};
+  min-height: 100vh;
 `;
 
 const Hero = styled.section`
